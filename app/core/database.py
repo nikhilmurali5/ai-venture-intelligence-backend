@@ -1,12 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import os
 
-
-DATABASE_URL = (
-    #"postgresql://postgres:nikhil123@host.docker.internal:5432/venture_intelligence"
-
-    "postgresql://postgres:nikhil123@localhost:5432/venture_intelligence"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(
     DATABASE_URL,
@@ -18,6 +14,7 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine
 )
+
 def get_db():
     db = SessionLocal()
 
