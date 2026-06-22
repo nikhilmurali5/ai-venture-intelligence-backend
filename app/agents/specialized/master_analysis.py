@@ -56,5 +56,7 @@ def analyze_everything(idea: str):
     """
 
     result = ask_llm(prompt)
+    print("GROQ RESPONSE:")
+    print(result)
 
     return safe_json(result)
