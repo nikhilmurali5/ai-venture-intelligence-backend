@@ -4,28 +4,25 @@ import re
 def safe_json(response):
 
     try:
-        response = response.replace("```json", "")
-        response = response.replace("```", "")
         response = response.strip()
+
+        if "```json" in response:
+            response = response.split("```json")[1]
+            response = response.split("```")[0]
 
         return json.loads(response)
 
-    except Exception:
+    except Exception as e:
+
+        print("JSON ERROR:", e)
 
         try:
-            match = re.search(
-                r"\{.*\}",
-                response,
-                re.DOTALL
-            )
+            match = re.search(r"\{[\s\S]*\}", response)
 
             if match:
-                return json.loads(match.group())
+                return json.loads(match.group(0))
 
-        except Exception:
-            pass
-
-        print("JSON PARSE FAILED")
-        print(response)
+        except Exception as e:
+            print("REGEX JSON ERROR:", e)
 
         return {}
