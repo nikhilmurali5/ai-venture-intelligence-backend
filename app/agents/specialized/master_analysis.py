@@ -35,14 +35,16 @@ def analyze_everything(idea: str):
         "future_growth": "Strong"
       }},
       "swot": {{
-        "strengths": ["point1","point2"],
-        "weaknesses": ["point1","point2"],
-        "opportunities": ["point1","point2"],
-        "threats": ["point1","point2"]
+        "strengths": ["point1","point2","point3","point4"],
+        "weaknesses": ["point1","point2","point3","point4"],
+        "opportunities": ["point1","point2","point3","point4"],
+        "threats": ["point1","point2","point3","point4"],
       }},
-      "business_plan": "Detailed business plan",
-      "pitch_deck": "Detailed pitch deck",
-      "viability_report": "Detailed viability report"
+      "business_plan": "# Executive Summary\n\nGive a complete business plan.\n\nInclude:\n- Startup cost\n- Revenue model\n- Marketing strategy\n- Operations plan\n- Growth strategy",
+
+"pitch_deck": "Slide 1: Problem\nExplain problem\n\nSlide 2: Solution\nExplain solution\n\nSlide 3: Market\nExplain market size\n\nSlide 4: Revenue Model\nExplain revenue\n\nSlide 5: Competition\nExplain competitors\n\nSlide 6: Funding\nExplain funding",
+
+"viability_report": "# Viability Report\n\nGive detailed viability report with:\n\n- Market opportunity\n- Risks\n- Strengths\n- Weaknesses\n- Final recommendation"
     }}
 
     IMPORTANT:
@@ -55,6 +57,7 @@ def analyze_everything(idea: str):
     """
 
     result = ask_llm(prompt)
+    print(result)
 
     print("GROQ RESPONSE:")
     print(result)
