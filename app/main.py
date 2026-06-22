@@ -16,18 +16,18 @@ from app.models.user import User
 
 from app.schemas.user import UserCreate
 from app.schemas.auth import LoginRequest
-#from app.agents.specialized.market_research import analyze_market
-#from app.agents.specialized.competition import analyze_competition
-#from app.agents.specialized.profitability import analyze_profitability
-#from app.agents.specialized.risk_analysis import analyze_risk
-#from app.agents.specialized.cost_estimation import estimate_cost
-#from app.agents.specialized.trend_forecaster import forecast_trends
-#from app.agents.specialized.viability_report import generate_viability_report
-#from app.agents.secialized.swot_analysis import analyze_swot
+from app.agents.specialized.market_research import analyze_market
+from app.agents.specialized.competition import analyze_competition
+from app.agents.specialized.profitability import analyze_profitability
+from app.agents.specialized.risk_analysis import analyze_risk
+from app.agents.specialized.cost_estimation import estimate_cost
+from app.agents.specialized.trend_forecaster import forecast_trends
+from app.agents.specialized.viability_report import generate_viability_report
+from app.agents.specialized.swot_analysis import analyze_swot
 from app.agents.specialized.business_plan import generate_business_plan
 from app.agents.specialized.pitch_deck import generate_pitch_deck
 from app.agents.specialized.competitor_finder import find_competitors
-from app.agents.specialized.master_analysis import analyze_everything
+#from app.agents.specialized.master_analysis import analyze_everything
 from app.services.pdf_generator import generate_pdf
 from app.models.analysis import Analysis
 from fastapi.responses import FileResponse
@@ -156,57 +156,117 @@ def analyze_idea(
     email: str = Depends(get_current_user_email),
     db: Session = Depends(get_db)
 ):
+    print("START MARKET")
+    market = analyze_market(data.idea)
 
-    print("START MASTER ANALYSIS")
+    print("START COMPETITION")
+    competition = analyze_competition(data.idea)
 
-    analysis_data = analyze_everything(data.idea)
+    print("START SWOT")
+    swot = analyze_swot(data.idea)
 
-    market = analysis_data.get("market", {})
-    competition = analysis_data.get("competition", {})
-    profitability = analysis_data.get("profitability", {})
-    risk = analysis_data.get("risk", {})
-    trend = analysis_data.get("trend", {})
-    swot = analysis_data.get("swot", {})
-    business_plan = analysis_data.get("business_plan", "")
-    pitch_deck = analysis_data.get("pitch_deck", "")
-    viability_report = analysis_data.get("viability_report", "")
+    print("START BUSINESS PLAN")
+    business_plan = generate_business_plan(data.idea)
 
-    competition_score = competition.get(
-        "competition_score",
-        70
+    print("START PITCH DECK")
+    pitch_deck = generate_pitch_deck(data.idea)
+
+    print("START PROFITABILITY")
+    profitability = analyze_profitability(data.idea)
+
+    print("START RISK")
+    risk = analyze_risk(data.idea)
+
+    print("START COST")
+    cost = estimate_cost(data.idea)
+
+    print("START TREND")
+    trend = forecast_trends(data.idea)
+
+    print("START VIABILITY REPORT")
+    viability_report = generate_viability_report(
+        market,
+        competition,
+        profitability,
+        risk,
+        trend
+    )
+
+    print("ALL AGENTS COMPLETED")
+
+    market = analyze_market(data.idea)
+
+    competition = analyze_competition(data.idea)
+
+    market = analyze_market(data.idea)
+
+    competition = analyze_competition(data.idea)
+
+    competition_score = (
+            competition.get("competition_score")
+            or competition.get("competition_analysis", {}).get("competition_score")
+            or 70
+    )
+
+    swot = analyze_swot(data.idea)
+
+    business_plan = generate_business_plan(data.idea)
+
+    pitch_deck = generate_pitch_deck(data.idea)
+
+    profitability = analyze_profitability(data.idea)
+
+    risk = analyze_risk(data.idea)
+
+    cost = estimate_cost(data.idea)
+
+    trend = forecast_trends(data.idea)
+
+    viability_report = generate_viability_report(
+        market,
+        competition,
+        profitability,
+        risk,
+        trend
     )
 
     overall_score = round(
         (
-            market.get("market_score", 50) * 0.30
-            + profitability.get("profitability_score", 50) * 0.25
-            + trend.get("trend_score", 50) * 0.20
-            + competition_score * 0.15
-            + (100 - risk.get("risk_score", 50)) * 0.10
+                market["market_score"] * 0.30
+                + profitability["profitability_score"] * 0.25
+                + trend["trend_score"] * 0.20
+                + competition_score * 0.15
+                + (100 - risk["risk_score"]) * 0.10
         ),
         2
     )
-
     if overall_score >= 90:
         recommendation = "Excellent Opportunity"
+
     elif overall_score >= 80:
         recommendation = "Good Opportunity"
+
     elif overall_score >= 70:
         recommendation = "Moderate Opportunity"
+
     elif overall_score >= 60:
         recommendation = "Risky Opportunity"
+
     else:
         recommendation = "Not Recommended"
-
     analysis = Analysis(
         user_email=email,
         idea=data.idea,
         overall_score=overall_score,
         recommendation=recommendation,
+
         report=viability_report,
+
         swot_analysis=json.dumps(swot),
         business_plan=business_plan,
+
         pitch_deck=pitch_deck,
+
         viability_report=viability_report
     )
 
@@ -216,11 +276,13 @@ def analyze_idea(
 
     return {
         "id": analysis.id,
+
         "idea": data.idea,
         "market": market,
         "competition": competition,
         "profitability": profitability,
         "risk": risk,
+        "cost_estimation": cost,
         "trend_forecast": trend,
         "swot_analysis": swot,
         "business_plan": business_plan,
