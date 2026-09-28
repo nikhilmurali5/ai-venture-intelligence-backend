@@ -16,7 +16,7 @@ def ask_llm(prompt: str):
     try:
 
         response = client.chat.completions.create(
-            model=model="openai/gpt-oss-120b",
+            model="openai/gpt-oss-120b",
             messages=[
                 {
                     "role": "user",
